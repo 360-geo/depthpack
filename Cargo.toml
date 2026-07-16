@@ -1,0 +1,30 @@
+[package]
+name = "depthpack"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.87"
+description = "Compact lossless / bounded-error codec for 16-bit depth maps with nodata (MED prediction + zstd). Pure Rust, wasm-compatible."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/360-geo/depthpack"
+keywords = ["depth-map", "compression", "codec", "pointcloud", "wasm"]
+categories = ["compression", "science::geo", "encoding"]
+
+[features]
+default = []
+# Swap the encoder's entropy stage to the C zstd bindings: measured
+# ~2.6x faster encode and ~27% smaller blobs than the pure-Rust encoder,
+# plus real compression levels. Native pipelines want this; the default
+# build is pure Rust end to end (wasm-compatible encode AND decode).
+zstd-c = ["dep:zstd"]
+
+[dependencies]
+# Pure-Rust zstd: decode always goes through ruzstd; encode too unless
+# the `zstd-c` feature swaps it out.
+ruzstd = "0.8"
+thiserror = "2"
+zstd = { version = "0.13", optional = true }
+
+[dev-dependencies]
+
+[profile.release]
+lto = true
