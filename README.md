@@ -161,6 +161,38 @@ input — see `tests/robustness.rs` and the `fuzz/` harness.
   benchmarked against; excellent general-purpose choice when you don't
   control both ends of the pipe.
 
+## Releasing
+
+Releases are published to [crates.io](https://crates.io/crates/depthpack)
+by `.github/workflows/publish.yaml`, which runs on a published GitHub
+release and authenticates with crates.io via **trusted publishing**
+(OIDC) — no API token required.
+
+To cut a release:
+
+1. Bump `version` in `Cargo.toml` (follow [SemVer](https://semver.org/))
+   and, if the on-disk format changed, the format table above and
+   `VERSION` in `src/lib.rs`. Commit and merge to `main`.
+2. Make sure CI is green on `main` (fmt, clippy, tests, wasm build).
+3. Create the release, tagging the version with a leading `v`:
+
+   ```sh
+   gh release create v0.1.0 --title v0.1.0 --notes "…" --target main
+   ```
+
+   The workflow derives the crate version from the tag (strips the `v`),
+   so the tag must match `Cargo.toml`.
+4. Watch the publish run and confirm the new version is live:
+
+   ```sh
+   gh run watch "$(gh run list --workflow=publish.yaml -L1 --json databaseId -q '.[0].databaseId')" --exit-status
+   ```
+
+Trusted publishing is configured under the crate's *Settings → Trusted
+Publishing* on crates.io (repository `360-geo/depthpack`, workflow
+`publish.yaml`). The very first `0.1.0` release predated that setup and
+was published once with a bootstrap token; every release since uses OIDC.
+
 ## License
 
 Licensed under either of
